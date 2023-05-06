@@ -16,28 +16,31 @@ export default {
         })
 
 
-
         const signup = async () => {
-            console.log(formData)
-            try {
-                const response = await axios.post('http://cb40778.tw1.ru/api/register', formData);
-                console.log(response.data);
-                formData.value = {
-                    name: '',
-                    sername: '',
-                    username: '',
-                    email: '',
-                    password: '',
-                    // birthday: '',
-                };
-            } catch (error) {
-                console.log(error);
+            if (!v$.email.email.$invalid && !v$.username.minLengthValue.$invalid && !v$.password.minLengthValue.$invalid) {
+                try {
+                    const response = await axios.post('http://cb40778.tw1.ru/api/register', formData);
+                    console.log(response.data);
+                    formData.value = {
+                        name: '',
+                        sername: '',
+                        username: '',
+                        email: '',
+                        password: '',
+                        // birthday: '',
+                    };
+                } catch (error) {
+                    console.log(error);
+                }
             }
         };
 
         const rules = {
             name: { required },
-            sername: { required },
+            password: {
+                required,
+                minLengthValue: minLength(8),
+            },
             username: {
                 required,
                 minLengthValue: minLength(4),
@@ -79,16 +82,15 @@ export default {
                                 required
                                 placeholder="Name"
                                 type="text"
+                                :class="{ 'required-input': v$.name.required.$invalid }"
                                 class="signup__form-input">
+                            <div class="invalid-feedback required-feedback"
+                                v-if="v$.name.required.$invalid">
+                                {{ v$.name.required.$message }}
+                            </div>
                             <!-- <pre>
                                 {{ v$.name }}
                             </pre> -->
-                            <!-- <div class="input-errors"
-                            v-for="error of v$.name.$errors"
-                            :key="error.$uid">
-                            <div class="error-msg">{{ error.$message }}</div>
-                        </div> -->
-
                         </label>
                         <label for="surname"
                             class="signup__form-item">
@@ -108,7 +110,19 @@ export default {
                             required
                             placeholder="Username"
                             type="text"
+                            :class="{
+                                error: v$.username.minLengthValue.$invalid,
+                                'required-input': v$.username.required.$invalid
+                            }"
                             class="signup__form-input">
+                        <div class="invalid-feedback required-feedback"
+                            v-if="v$.username.required.$invalid">
+                            {{ v$.username.required.$message }}
+                        </div>
+                        <div class="invalid-feedback"
+                            v-if="v$.username.minLengthValue.$invalid">
+                            {{ v$.username.minLengthValue.$message }}
+                        </div>
                     </label>
                     <!-- <pre>
                                 {{ v$.username }}
@@ -122,9 +136,20 @@ export default {
                             placeholder="Email"
                             type="email"
                             class="signup__form-input"
-                            :class="{ error: v$.email.email.$invalid }">
+                            :class="{
+                                error: v$.email.email.$invalid,
+                                'required-input': v$.email.required.$invalid
+                            }">
+                        <div class="invalid-feedback required-feedback"
+                            v-if="v$.email.required.$invalid">
+                            {{ v$.email.required.$message }}
+                        </div>
+                        <div class="invalid-feedback"
+                            v-if="v$.email.email.$invalid">
+                            {{ v$.email.email.$message }}
+                        </div>
                         <!-- <pre>
-                                {{ v$.email.email.$invalid }}
+                                {{ v$.email }}
                             </pre> -->
                     </label>
                     <label for="password"
@@ -135,7 +160,20 @@ export default {
                             required
                             placeholder="Password"
                             type="password"
+                            :class="{
+                                error: v$.password.minLengthValue.$invalid,
+                                'required-input': v$.password.required.$invalid
+                            }"
                             class="signup__form-input">
+                        <div class="invalid-feedback required-feedback"
+                            v-if="v$.password.required.$invalid">
+                            {{ v$.password.required.$message }}
+                        </div>
+                        <div class="invalid-feedback"
+                            v-if="v$.password.minLengthValue.$invalid">
+                            {{ v$.password.minLengthValue.$message }}
+                        </div>
+                        <!-- <pre> {{ v$.password }}</pre> -->
                     </label>
                     <!-- <label for="birthday"
                         class="signup__form-item w-full">
@@ -153,6 +191,14 @@ export default {
     </section>
 </template>
 
+<style lang="scss">
+$light-primary-bg: #f0f2f5;
+
+body {
+    background-color: $light-primary-bg !important;
+}
+</style>
+
 <style lang="scss" scoped>
 $light-primary-bg: #f0f2f5;
 $light-primary: #ffffff;
@@ -165,7 +211,7 @@ $light-btn: #2acd00;
 // $light-btn-hover: #a70d55;
 $light-btn-hover: #1e8803;
 $light-gray: #dadde1;
-$light-text: #141313;
+$light-text: #181818;
 
 
 .w-full {
@@ -175,7 +221,6 @@ $light-text: #141313;
 .signup {
     width: 100%;
     height: 100%;
-    background-color: $light-primary-bg;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -186,7 +231,7 @@ $light-text: #141313;
     }
 
     &-wrapper {
-        padding: 180px 0px;
+        padding: 140px 0px;
         width: 100%;
         background: transparent;
 
@@ -227,10 +272,29 @@ $light-text: #141313;
         padding: 24px;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 28px;
 
         @media (max-width: 400px) {
             padding: 24px 18px;
+        }
+
+        .invalid-feedback {
+            margin-top: 4px;
+            margin-left: 4px;
+            font-size: 10px;
+            position: absolute;
+            color: $light-text ;
+        }
+
+        .required-feedback {
+            display: none;
+        }
+
+        .required-input {
+            &:focus {
+                border-color: #dc3545;
+                box-shadow: 0 0 1px 1px #dc3545;
+            }
         }
 
         &-title {
@@ -272,6 +336,10 @@ $light-text: #141313;
             &:focus {
                 border-color: #2acd00;
                 box-shadow: 0 0 1px 1px #2acd00;
+            }
+
+            &:focus+div {
+                display: block;
             }
 
             &.error {

@@ -13,7 +13,7 @@ function plus() {
 </script>
 
 <template>
-    
+    <div>{{ hello.value }}</div>
 </template>
 
 <style lang="scss" scoped></style>
