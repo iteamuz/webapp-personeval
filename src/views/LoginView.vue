@@ -12,17 +12,13 @@ import eyeSlashIcon from '@/components/icons/EyeSlashIcon.vue'
 // VARIABLES
 const router = useRouter()
 
-const formData = reactive({
-    name: '',
-    sername: '',
+const loginData = reactive({
     username: '',
-    email: '',
     password: '',
-    // birthday: '',
 })
 
 const userNameInput = ref(null);
-const emailInput = ref(null);
+const passwordInput = ref(null);
 
 const formErrors = reactive({
     username: '',
@@ -32,10 +28,6 @@ const formErrors = reactive({
 const showPassword = ref(false);
 
 const rules = {
-    name: {
-        required,
-        minLengthValue: minLength(3),
-    },
     password: {
         required,
         minLengthValue: minLength(8),
@@ -44,10 +36,6 @@ const rules = {
         required,
         minLengthValue: minLength(4),
     },
-    email: {
-        required,
-        email
-    }
 }
 
 
@@ -62,30 +50,34 @@ const focusInput = (refName) => {
     refName.value.focus()
 };
 
-const signUp = async () => {
-    if (!v$.value.email.email.$invalid && !v$.value.name.minLengthValue.$invalid && !v$.value.username.minLengthValue.$invalid && !v$.value.password.minLengthValue.$invalid) {
+const login = async () => {
+    if (!v$.value.username.minLengthValue.$invalid && !v$.value.password.minLengthValue.$invalid) {
         try {
-            const response = await axios.post('http://cb40778.tw1.ru/api/register', formData);
-            if (response.data.success == true) {
-                localStorage.setItem('token', response.data.token)
-                for (let key in formData) {
-                    formData[key] = '';
+            const res = await axios.post('http://cb40778.tw1.ru/api/login', loginData);
+            console.log(res.data);
+            if (res.data.success == true) {
+                localStorage.setItem('token', res.data.token)
+                for (let key in loginData) {
+                    loginData[key] = '';
                 }
                 auth()
-                formErrors.email = '';
-                formErrors.username = '';
-            } else {
-                let data = response.data;
-                if (data.code == 57) {
-                    formErrors.username = data.message;
-                    formData.username = ''
-                    focusInput(userNameInput)
-                } else if (data.code == 60) {
-                    formErrors.email = data.message;
-                    formData.email = ''
-                    focusInput(emailInput)
-                }
+                // formErrors.username = ''
+                // formErrors.password = ''
+            } else{
+                console.log(res.data);
             }
+            // else {
+            //     let data = response.data;
+            //     if (data.code == 57) {
+            //         formErrors.username = data.message;
+            //         formData.username = ''
+            //         focusInput(userNameInput)
+            //     } else if (data.code == 60) {
+            //         formErrors.email = data.message;
+            //         formData.email = ''
+            //         focusInput(emailInput)
+            //     }
+            // }
         } catch (error) {
             console.log(error);
         }
@@ -110,7 +102,7 @@ const auth = async () => {
     }
 }
 
-const v$ = useVuelidate(rules, formData)
+const v$ = useVuelidate(rules, loginData)
 
 onMounted(() => {
     console.log("%c Добро пожаловать в консоль) ", "color: blue; line-height: 60px; font-size: 20px;");
@@ -121,57 +113,18 @@ onMounted(() => {
 </script>
 
 <template>
-    <section class="signup">
-        <div class="signup-wrapper">
-            <div class="signup__box">
-                <div class="signup-title">
-                    Let's join us
+    <section class="login">
+        <div class="login-wrapper">
+            <div class="login__box">
+                <div class="login-title">
+                    LOGIN TO <span>PersonEval</span>
                 </div>
-                <form @submit.prevent="signUp"
-                    class="signup__form">
-                    <div class="signup__form-box">
-                        <label for="name"
-                            class="signup__form-item">
-                            <h3 class="signup__form-title">Name</h3>
-                            <input v-model="formData.name"
-                                id="name"
-                                required
-                                autocomplete="off"
-                                placeholder="Name"
-                                maxlength="30"
-                                type="text"
-                                :class="{
-                                    error: v$.name.minLengthValue.$invalid,
-                                    'required-input': v$.name.required.$invalid
-                                }"
-                                class="signup__form-input">
-                            <div class="input-errors">
-                                <span class="invalid-feedback required-feedback"
-                                    v-if="v$.name.required.$invalid">
-                                    {{ v$.name.required.$message }}.
-                                </span>
-                                <span class="invalid-feedback"
-                                    v-if="v$.name.minLengthValue.$invalid">
-                                    {{ v$.name.minLengthValue.$message }}.
-                                </span>
-                            </div>
-                        </label>
-                        <label for="surname"
-                            class="signup__form-item">
-                            <h3 class="signup__form-title">Surname <span>(unnecessary)</span></h3>
-                            <input v-model="formData.sername"
-                                id="surname"
-                                autocomplete="off"
-                                maxlength="30"
-                                placeholder="Surname"
-                                type="text"
-                                class="signup__form-input">
-                        </label>
-                    </div>
+                <form @submit.prevent="login"
+                    class="login__form">
                     <label for="username"
-                        class="signup__form-item w-full">
-                        <h3 class="signup__form-title">Username <span>(come of with nickname)</span></h3>
-                        <input v-model="formData.username"
+                        class="login__form-item w-full">
+                        <h3 class="login__form-title">Username</h3>
+                        <input v-model="loginData.username"
                             id="username"
                             required
                             placeholder="Username"
@@ -182,7 +135,7 @@ onMounted(() => {
                                 error: v$.username.minLengthValue.$invalid,
                                 'required-input': v$.username.required.$invalid
                             }"
-                            class="signup__form-input">
+                            class="login__form-input">
                         <div class="input-errors">
                             <span class="invalid-feedback required-feedback"
                                 v-if="v$.username.required.$invalid">
@@ -198,43 +151,14 @@ onMounted(() => {
                             </span>
                         </div>
                     </label>
-                    <label for="email"
-                        class="signup__form-item w-full">
-                        <h3 class="signup__form-title">Email</h3>
-                        <input v-model="formData.email"
-                            id="email"
-                            required
-                            placeholder="Email"
-                            maxlength="35"
-                            type="email"
-                            ref="emailInput"
-                            class="signup__form-input"
-                            :class="{
-                                error: v$.email.email.$invalid,
-                                'required-input': v$.email.required.$invalid
-                            }">
-                        <div class="input-errors">
-                            <div class="invalid-feedback required-feedback"
-                                v-if="v$.email.required.$invalid">
-                                {{ v$.email.required.$message }}.
-                            </div>
-                            <span class="invalid-feedback "
-                                v-if="formErrors.email.length && !formData.email.length">
-                                {{ formErrors.email }}
-                            </span>
-                            <div class="invalid-feedback"
-                                v-if="v$.email.email.$invalid">
-                                {{ v$.email.email.$message }}.
-                            </div>
-                        </div>
-                    </label>
                     <label for="password"
-                        class="signup__form-item w-full">
-                        <h3 class="signup__form-title">Password</h3>
-                        <div class="signup__form-password password">
-                            <input v-model="formData.password"
+                        class="login__form-item w-full">
+                        <h3 class="login__form-title">Password</h3>
+                        <div class="login__form-password password">
+                            <input v-model="loginData.password"
                                 id="password"
                                 required
+                                ref='passwordInput'
                                 maxlength="35"
                                 placeholder="Password"
                                 :type="showPassword ? 'text' : 'password'"
@@ -242,7 +166,7 @@ onMounted(() => {
                                     error: v$.password.minLengthValue.$invalid,
                                     'required-input': v$.password.required.$invalid
                                 }"
-                                class="signup__form-input password-input">
+                                class="login__form-input password-input">
                             <div class="input-errors">
                                 <div class="invalid-feedback required-feedback"
                                     v-if="v$.password.required.$invalid">
@@ -253,7 +177,7 @@ onMounted(() => {
                                     {{ v$.password.minLengthValue.$message }}.
                                 </div>
                             </div>
-                            <span v-if="formData.password.length >= 1"
+                            <span v-if="loginData.password.length >= 1"
                                 @click="changeShowPassword"
                                 class="password-show">
                                 <eyeIcon v-if="!showPassword"
@@ -262,22 +186,15 @@ onMounted(() => {
                                     :color="'#181818'" />
                             </span>
                         </div>
-
                     </label>
-                    <!-- <label for="birthday"
-                        class="signup__form-item w-full">
-                        <h3 class="signup__form-title">Birthday</h3>
-                        <input v-model="formData.birthday"
-                            id="birthday"
-                            required
-                            type="date"
-                            class="signup__form-input">
-                    </label> -->
-                    <button class="signup__form-btn">Sign Up</button>
+                    <button class="login__form-btn">Sign Up</button>
                 </form>
-                <div class="signup__links">
-                    <a @click="router.push('/login')"
-                        class="signup__links-item">Already have an account?</a>
+                <div class="login__links">
+                    <a @click="router.push('/signup')"
+                        class="login__links-item">Sign Up for PersonEval</a>
+                    <span>|</span>
+                    <a @click="router.push('/signup')"
+                        class="login__links-item">Forgot account?</a>
                 </div>
             </div>
         </div>
@@ -287,6 +204,11 @@ onMounted(() => {
 <style lang="scss">
 $light-primary-bg: #f0f2f5;
 $light-primary: #ffffff;
+$light-text: #181818;
+
+* {
+    color: $light-text;
+}
 
 body {
     background-color: $light-primary-bg;
@@ -312,12 +234,14 @@ $light-btn-hover: #1e8803;
 $error-btn: #dc3545;
 $light-gray: #dadde1;
 $light-text: #181818;
+$light-color: #E98074;
+
 
 .w-full {
     width: 100% !important;
 }
 
-.signup {
+.login {
     width: 100%;
     height: 100%;
     display: flex;
@@ -325,13 +249,9 @@ $light-text: #181818;
     justify-content: center;
 
     &-wrapper {
-        padding: 120px 0px 80px;
+        padding: 140px 0px 40px;
         width: 100%;
         background: transparent;
-
-        @media (max-width: 576px) {
-            padding: 40px 0px;
-        }
     }
 
     &__box {
@@ -356,11 +276,15 @@ $light-text: #181818;
     &-title {
         text-align: center;
         font-size: 24px;
-        text-transform: uppercase;
         padding-bottom: 16px;
         border-bottom: 1px solid $light-gray;
         letter-spacing: 1.4px;
+        color: $light-text;
         font-weight: 500;
+
+        span {
+            color: $light-color;
+        }
     }
 
     &__form {
@@ -375,7 +299,8 @@ $light-text: #181818;
 
         &-title {
             font-size: 16px;
-            font-weight: 500;
+            color: $light-text;
+
             display: flex;
             align-items: center;
             gap: 6px;
@@ -386,20 +311,14 @@ $light-text: #181818;
             }
         }
 
-        &-box {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            row-gap: 34px;
-        }
-
         &-item {
             width: calc(50% - 4px);
-            position: relative;
 
             @media (max-width: 576px) {
                 width: 100%;
             }
+
+            position: relative;
 
             .input-errors {
                 width: 100%;
@@ -414,6 +333,7 @@ $light-text: #181818;
             .invalid-feedback {
                 font-size: 10px;
                 white-space: nowrap;
+                color: $light-text;
 
                 &:last-child {
                     text-overflow: ellipsis;
@@ -520,7 +440,7 @@ $light-text: #181818;
         width: 100%;
         flex-wrap: wrap;
         gap: 8px;
-        justify-content: space-around;
+        justify-content: center;
         margin-bottom: 8px;
 
         &-item {
@@ -542,6 +462,7 @@ $light-text: #181818;
             }
         }
     }
+
 }
 </style>
 
