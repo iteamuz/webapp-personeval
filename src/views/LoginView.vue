@@ -6,11 +6,13 @@ import { required, minLength, email } from '@vuelidate/validators'
 import { useRouter } from 'vue-router'
 import eyeIcon from '@/components/icons/EyeIcon.vue'
 import eyeSlashIcon from '@/components/icons/EyeSlashIcon.vue'
+import { useToast } from "vue-toastification"
 
 
 
 // VARIABLES
 const router = useRouter()
+const toast = useToast();
 
 const loginData = reactive({
     username: '',
@@ -21,8 +23,8 @@ const userNameInput = ref(null);
 const passwordInput = ref(null);
 
 const formErrors = reactive({
-    username: '',
-    email: '',
+    password: false,
+    username: false
 });
 
 const showPassword = ref(false);
@@ -60,26 +62,34 @@ const login = async () => {
                 for (let key in loginData) {
                     loginData[key] = '';
                 }
+                for (let key in formErrors) {
+                    formErrors[key] = false;
+                }
                 auth()
-                // formErrors.username = ''
-                // formErrors.password = ''
-            } else{
-                console.log(res.data);
             }
-            // else {
-            //     let data = response.data;
-            //     if (data.code == 57) {
-            //         formErrors.username = data.message;
-            //         formData.username = ''
-            //         focusInput(userNameInput)
-            //     } else if (data.code == 60) {
-            //         formErrors.email = data.message;
-            //         formData.email = ''
-            //         focusInput(emailInput)
-            //     }
-            // }
         } catch (error) {
-            console.log(error);
+            if (!error.response.data.success) {
+                toast.error("Uh, Sorry. An error occurred. Please enter the correct login or password", {
+                    position: "top-center",
+                    timeout: 5000,
+                    hideProgressBar: false,
+                    closeButton: true,
+                    closeOnClick: true,
+                    pauseOnFocusLoss: false,
+                    pauseOnHover: false,
+                    draggable: true,
+                    draggablePercent: 0.6,
+                    closeButton: "button",
+                    icon: true,
+                    rtl: false
+                });
+                for (let key in loginData) {
+                    loginData[key] = '';
+                }
+                for (let key in formErrors) {
+                    formErrors[key] = true;
+                }
+            }
         }
     }
 };
@@ -132,18 +142,14 @@ onMounted(() => {
                             type="text"
                             ref="userNameInput"
                             :class="{
-                                error: v$.username.minLengthValue.$invalid,
-                                'required-input': v$.username.required.$invalid
+                                error: v$.username.minLengthValue.$invalid || formErrors.username,
+                                'required-input': v$.username.required.$invalid,
                             }"
                             class="login__form-input">
                         <div class="input-errors">
                             <span class="invalid-feedback required-feedback"
                                 v-if="v$.username.required.$invalid">
                                 {{ v$.username.required.$message }}.
-                            </span>
-                            <span class="invalid-feedback "
-                                v-if="formErrors.username.length && !formData.username.length">
-                                {{ formErrors.username }}
                             </span>
                             <span class="invalid-feedback"
                                 v-if="v$.username.minLengthValue.$invalid">
@@ -163,7 +169,7 @@ onMounted(() => {
                                 placeholder="Password"
                                 :type="showPassword ? 'text' : 'password'"
                                 :class="{
-                                    error: v$.password.minLengthValue.$invalid,
+                                    error: v$.password.minLengthValue.$invalid || formErrors.password,
                                     'required-input': v$.password.required.$invalid
                                 }"
                                 class="login__form-input password-input">
