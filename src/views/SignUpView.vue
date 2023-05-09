@@ -112,9 +112,7 @@ const auth = async () => {
 
 const v$ = useVuelidate(rules, formData)
 
-onMounted(() => {
-    console.log("%c Добро пожаловать в консоль) ", "color: blue; line-height: 60px; font-size: 20px;");
-});
+
 
 
 

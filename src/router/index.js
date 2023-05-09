@@ -28,17 +28,17 @@ const router = createRouter({
 })
 
 
-// router.beforeEach((to, from) => {
-//   const auth = localStorage.getItem('token');
+router.beforeEach((to, from) => {
+  const auth = localStorage.getItem('token');
 
-//   if (auth && to.name == 'signup') {
-//     return { name: 'home' };
-//   }
+  if (auth && to.name == 'signup' || auth && to.name == 'login') {
+    return { name: 'home' };
+  }
 
 
-//   if (!auth && to.meta.needLogin) {
-//     return { name: 'signup' }
-//   }
-// });
+  if (!auth && to.meta.needLogin) {
+    return { name: 'login' }
+  }
+});
 
 export default router

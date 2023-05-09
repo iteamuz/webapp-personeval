@@ -52,20 +52,27 @@ const focusInput = (refName) => {
     refName.value.focus()
 };
 
+const changeInput = (item) => {
+    if (item === 'username') {
+        formErrors.username = false
+    } else if (item === 'password') {
+        formErrors.password = false
+    }
+}
+
 const login = async () => {
     if (!v$.value.username.minLengthValue.$invalid && !v$.value.password.minLengthValue.$invalid) {
         try {
             const res = await axios.post('http://cb40778.tw1.ru/api/login', loginData);
-            console.log(res.data);
             if (res.data.success == true) {
                 localStorage.setItem('token', res.data.token)
-                for (let key in loginData) {
-                    loginData[key] = '';
-                }
+                auth()
                 for (let key in formErrors) {
                     formErrors[key] = false;
                 }
-                auth()
+                for (let key in loginData) {
+                    loginData[key] = '';
+                }
             }
         } catch (error) {
             if (!error.response.data.success) {
@@ -83,9 +90,6 @@ const login = async () => {
                     icon: true,
                     rtl: false
                 });
-                for (let key in loginData) {
-                    loginData[key] = '';
-                }
                 for (let key in formErrors) {
                     formErrors[key] = true;
                 }
@@ -114,11 +118,6 @@ const auth = async () => {
 
 const v$ = useVuelidate(rules, loginData)
 
-onMounted(() => {
-    console.log("%c Добро пожаловать в консоль) ", "color: blue; line-height: 60px; font-size: 20px;");
-});
-
-
 
 </script>
 
@@ -141,6 +140,7 @@ onMounted(() => {
                             maxlength="35"
                             type="text"
                             ref="userNameInput"
+                            @input="changeInput('username')"
                             :class="{
                                 error: v$.username.minLengthValue.$invalid || formErrors.username,
                                 'required-input': v$.username.required.$invalid,
@@ -168,6 +168,7 @@ onMounted(() => {
                                 maxlength="35"
                                 placeholder="Password"
                                 :type="showPassword ? 'text' : 'password'"
+                                @input="changeInput('password')"
                                 :class="{
                                     error: v$.password.minLengthValue.$invalid || formErrors.password,
                                     'required-input': v$.password.required.$invalid
@@ -403,11 +404,6 @@ $light-color: #E98074;
                 color: $light-gray;
             }
 
-            &:focus {
-                border-color: $light-btn;
-                box-shadow: 0 0 1px 1px $light-btn;
-            }
-
             &:focus+div .required-feedback {
                 display: block;
             }
@@ -415,6 +411,11 @@ $light-color: #E98074;
             &.error {
                 border-color: $error-btn;
                 box-shadow: 0 0 1px 1px $error-btn;
+            }
+
+            &:focus {
+                border-color: $light-btn;
+                box-shadow: 0 0 1px 1px $light-btn;
             }
         }
 
